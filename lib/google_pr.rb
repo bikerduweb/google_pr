@@ -71,6 +71,8 @@ class GooglePR
     @uri = uri if uri != @uri
     open(request_uri) { |f| return $1.to_i if f.string =~ /Rank_1:\d:(\d+)/ }
     nil
+  rescue OpenURI::HTTPError
+    nil
   end
 
   private :m1, :i2c, :c2i, :mix, :old_cn
