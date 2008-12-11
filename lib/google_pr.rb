@@ -18,6 +18,7 @@ class GooglePR
 
   # Create a new GooglePR object with the given 'uri' parameter
   def initialize(uri)
+    # TODO should raise a URI::InvalidURIError with a invalid URI parameter
     @uri = uri
   end
 
@@ -56,7 +57,7 @@ class GooglePR
   end
   
   # Calculates de checksum to use as 'ch' parameter on request_uri, 
-  # for example the checksum of www.rubyonrails.com is 63157409018
+  # for example the checksum of www.rubyonrails.com is 6602033163
   def cn
     ch = old_cn
     ch = ((ch/7) << 2) | ((ch-(ch/13).floor*13)&7)
@@ -66,7 +67,7 @@ class GooglePR
   end
 
   # URI that gets the pagerank, 
-  # for example to get the Google's pagerank of www.rubyonrails.com the request_uri is http://toolbarqueries.google.com/search?client=navclient-auto&hl=en&ch=63157409018&ie=UTF-8&oe=UTF-8&features=Rank&q=info:http%3A%2F%2Fwww.rubyonrails.com
+  # for example to get the Google's pagerank of www.rubyonrails.com the request_uri is http://toolbarqueries.google.com/search?client=navclient-auto&hl=en&ch=6602033163&ie=UTF-8&oe=UTF-8&features=Rank&q=info:www.rubyonrails.com
   def request_uri
     # http://www.bigbold.com/snippets/posts/show/1260 + _ -> %5F
     "http://toolbarqueries.google.com/search?client=navclient-auto&hl=en&ch=#{cn}&ie=UTF-8&oe=UTF-8&features=Rank&q=info:#{URI.escape(@uri, /[^-.!~*'()a-zA-Z\d]/)}"

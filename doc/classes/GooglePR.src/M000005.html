@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
 </head>
 <body class="standalone-code">
-  <pre><span class="ruby-comment cmt"># File lib/google_pr.rb, line 76</span>
+  <pre><span class="ruby-comment cmt"># File lib/google_pr.rb, line 77</span>
   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">page_rank</span>(<span class="ruby-identifier">uri</span> = <span class="ruby-ivar">@uri</span>)
     <span class="ruby-ivar">@uri</span> = <span class="ruby-identifier">uri</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">uri</span> <span class="ruby-operator">!=</span> <span class="ruby-ivar">@uri</span>
     <span class="ruby-identifier">open</span>(<span class="ruby-identifier">request_uri</span>) { <span class="ruby-operator">|</span><span class="ruby-identifier">f</span><span class="ruby-operator">|</span> <span class="ruby-keyword kw">return</span> <span class="ruby-identifier">$1</span>.<span class="ruby-identifier">to_i</span> <span class="ruby-keyword kw">if</span> <span class="ruby-identifier">f</span>.<span class="ruby-identifier">string</span> <span class="ruby-operator">=~</span> <span class="ruby-regexp re">/Rank_1:\d:(\d+)/</span> }

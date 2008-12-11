@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="../.././rdoc-style.css" type="text/css" media="screen" />
 </head>
 <body class="standalone-code">
-  <pre><span class="ruby-comment cmt"># File lib/google_pr.rb, line 70</span>
+  <pre><span class="ruby-comment cmt"># File lib/google_pr.rb, line 71</span>
   <span class="ruby-keyword kw">def</span> <span class="ruby-identifier">request_uri</span>
     <span class="ruby-comment cmt"># http://www.bigbold.com/snippets/posts/show/1260 + _ -&gt; %5F</span>
     <span class="ruby-node">&quot;http://toolbarqueries.google.com/search?client=navclient-auto&amp;hl=en&amp;ch=#{cn}&amp;ie=UTF-8&amp;oe=UTF-8&amp;features=Rank&amp;q=info:#{URI.escape(@uri, /[^-.!~*'()a-zA-Z\d]/)}&quot;</span>

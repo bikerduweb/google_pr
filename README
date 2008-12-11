@@ -12,6 +12,13 @@ Example
 
 GooglePR.new("http://www.microsoft.com").page_rank
 
+Specs
+=====
+
+Run this after each improvement in this project
+spec spec/pagerank_checker_specs.rb
+It requires Rspec installation: gem install rspec
+
 
 (C) 2006-2007 under terms of LGPL v2.1
 by Vsevolod S. Balashov <vsevolod@balashov.name>
