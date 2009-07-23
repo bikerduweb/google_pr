@@ -78,7 +78,7 @@ class GooglePR
     @uri = uri if uri != @uri
     open(request_uri) { |f| return $1.to_i if f.string =~ /Rank_1:\d:(\d+)/ }
     nil
-  rescue OpenURI::HTTPError
+  rescue OpenURI::HTTPError, SocketError
     nil
   end
 
