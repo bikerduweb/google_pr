@@ -11,6 +11,8 @@ require 'uri'
 require 'open-uri'
 
 # http://blog.outer-court.com/archive/2004_06_27_index.html#108834386239051706
+class AutomatedQueryError < StandardError; end;
+
 class GooglePR
 
   M=0x100000000 # modulo for unsigned int 32bit(4byte)
@@ -76,8 +78,12 @@ class GooglePR
   # Return a number between 0 to 10, that represents the Google PageRank
   def page_rank(uri = @uri)
     @uri = uri if uri != @uri
-    open(request_uri) { |f| return $1.to_i if f.string =~ /Rank_1:\d:(\d+)/ }
-    nil
+    res = HTTParty.get(request_uri, :headers => {"User-Agent" => Object.const_defined?("WITH_USER_AGENT") ? Object.const_get("WITH_USER_AGENT") : "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; fr; rv:1.9.0.10) Gecko/2009042315 Firefox/3.0.10" })
+    if (m=res.to_s.match(/Rank_1:\d:(\d+)/))
+      return m[1].to_i
+    elsif res.to_s.match(/automated queries/im)
+      raise AutomatedQueryError.new("Blacklisted for automated queries")
+    end
   rescue OpenURI::HTTPError, SocketError
     nil
   end
