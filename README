@@ -5,7 +5,7 @@ This plugin for Ruby on Rails allow to check the Google PageRank of an URL
 The original script was wrote by Vsevolod S. Balashov <vsevolod@balashov.name>
 and is base on code snippets found on the web (see code comments)
 
-This script was rewritten to become a plugin for Rails
+This script was rewritten to become a Rails gem
 
 Example
 =======
