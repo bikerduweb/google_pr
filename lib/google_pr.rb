@@ -72,7 +72,7 @@ class GooglePR
   # for example to get the Google's pagerank of www.rubyonrails.com the request_uri is http://toolbarqueries.google.com/search?client=navclient-auto&hl=en&ch=6602033163&ie=UTF-8&oe=UTF-8&features=Rank&q=info:www.rubyonrails.com
   def request_uri
     # http://www.bigbold.com/snippets/posts/show/1260 + _ -> %5F
-    "http://toolbarqueries.google.com/search?client=navclient-auto&hl=en&ch=#{cn}&ie=UTF-8&oe=UTF-8&features=Rank&q=info:#{URI.escape(@uri, /[^-.!~*'()a-zA-Z\d]/)}"
+    "http://toolbarqueries.google.com/tbr?client=navclient-auto&hl=en&ch=#{cn}&ie=UTF-8&oe=UTF-8&features=Rank&q=info:#{URI.escape(@uri, /[^-.!~*'()a-zA-Z\d]/)}"
   end
 
   # Return a number between 0 to 10, that represents the Google PageRank

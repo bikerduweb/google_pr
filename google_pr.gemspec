@@ -6,7 +6,7 @@ end.flatten
 
 Gem::Specification.new do |s|
   s.name              = "google_pr"
-  s.version           = '1.0.0'
+  s.version           = '1.0.1'
   s.date              = Time.now.strftime('%Y-%m-%d')
   s.summary           = "Google PR check"
   s.description       = "Check Google Pagerank"
