@@ -6,6 +6,7 @@ end.flatten
 
 Gem::Specification.new do |s|
   s.name              = "google_pr"
+  s.author            = "Vsevolod S. Balashov"
   s.version           = '1.0.1'
   s.date              = Time.now.strftime('%Y-%m-%d')
   s.summary           = "Google PR check"
