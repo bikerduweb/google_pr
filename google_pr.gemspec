@@ -15,5 +15,5 @@ Gem::Specification.new do |s|
   s.has_rdoc          = false
   s.files             = include_files
   s.require_path      = "lib"
-  s.add_dependency = 'httparty'
+  s.add_dependency 'httparty'
 end

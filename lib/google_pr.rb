@@ -11,82 +11,112 @@ require 'uri'
 require 'open-uri'
 
 # http://blog.outer-court.com/archive/2004_06_27_index.html#108834386239051706
-class AutomatedQueryError < StandardError; end;
+class AutomatedQueryError < StandardError
+end
+
+
+
+# extracted from PageRankr
+# cf. https://github.com/blatyo/page_rankr
+# use: Google::Pagerank.new(domain).check
+
+class GoogleChecksum
+  class << self
+    def generate(site)
+      bytes  = byte_array(site)
+      length = bytes.length
+      a = b = 0x9E3779B9
+      c = 0xE6359A60
+
+      k, len = 0, length
+      while(len >= 12)
+        a, b, c = mix(*shift(a, b, c, k, bytes))
+        k += 12
+        len -= 12
+      end
+
+      c = c + length
+
+      c = mix(*toss(a, b, c, bytes, len, k))[2]
+      "6" + c.to_s
+    end
+
+    private
+
+    def byte_array(site)
+      bytes = []
+      site.each_byte {|b| bytes << b}
+      bytes
+    end
+
+    # Need to keep numbers in the unsigned int 32 range
+    def m(v)
+      v % 0x100000000
+    end
+
+    def shift(a, b, c, k, bytes)
+      a = m(a + bytes[k + 0] + (bytes[k + 1] << 8) + (bytes[k +  2] << 16) + (bytes[k +  3] << 24))
+      b = m(b + bytes[k + 4] + (bytes[k + 5] << 8) + (bytes[k +  6] << 16) + (bytes[k +  7] << 24))
+      c = m(c + bytes[k + 8] + (bytes[k + 9] << 8) + (bytes[k + 10] << 16) + (bytes[k + 11] << 24))
+
+      [a, b, c]
+    end
+
+    def mix(a, b, c)
+      a, b, c = m(a), m(b), m(c)
+
+      a = m(a-b-c) ^ m(c >> 13)
+      b = m(b-c-a) ^ m(a << 8)
+      c = m(c-a-b) ^ m(b >> 13)
+
+      a = m(a-b-c) ^ m(c >> 12)
+      b = m(b-c-a) ^ m(a << 16)
+      c = m(c-a-b) ^ m(b >> 5)
+
+      a = m(a-b-c) ^ m(c >> 3)
+      b = m(b-c-a) ^ m(a << 10)
+      c = m(c-a-b) ^ m(b >> 15)
+
+      [a, b, c]
+    end
+
+    def toss(a, b, c, bytes, len, k)
+      case len
+      when 9..11
+        c = c + (bytes[k+len-1] << ((len % 8) * 8))
+      when 5..8
+        b = b + (bytes[k+len-1] << ((len % 5) * 8))
+      when 1..4
+        a = a + (bytes[k+len-1] << ((len - 1) * 8))
+      else
+        return [a, b, c]
+      end
+      toss(a, b, c, bytes, len-1, k)
+    end
+  end
+end
 
 class GooglePR
+  attr_accessor :domain, :checksum
 
-  M=0x100000000 # modulo for unsigned int 32bit(4byte)
-  attr_accessor :uri
-
-  # Create a new GooglePR object with the given 'uri' parameter
-  def initialize(uri)
-    # TODO should raise a URI::InvalidURIError with a invalid URI parameter
-    @uri = uri
-  end
-
-  def m1(a,b,c,d)
-    (((a+(M-b)+(M-c))%M)^(d%M))%M # mix/power mod
-  end
-
-  def i2c(i)
-    [i&0xff, i>>8&0xff, i>>16&0xff, i>>24&0xff]
-  end
-
-  def c2i(s,k=0)
-    ((s[k+3].to_i*0x100+s[k+2].to_i)*0x100+s[k+1].to_i)*0x100+s[k].to_i
-  end
-
-  def mix(a,b,c)
-    a = a%M; b = b%M; c = c%M
-    a = m1(a,b,c, c >> 13); b = m1(b,c,a, a <<  8); c = m1(c,a,b, b >> 13)
-    a = m1(a,b,c, c >> 12); b = m1(b,c,a, a << 16); c = m1(c,a,b, b >>  5)
-    a = m1(a,b,c, c >>  3); b = m1(b,c,a, a << 10); c = m1(c,a,b, b >> 15)
-    [a, b, c]
-  end
-
-  def old_cn(iurl = 'info:' + @uri)
-    a = 0x9E3779B9; b = 0x9E3779B9; c = 0xE6359A60
-    len = iurl.size
-    k = 0
-    while (len >= k + 12) do
-      a += c2i(iurl,k); b += c2i(iurl,k+4); c += c2i(iurl,k+8)
-      a, b, c = mix(a, b, c)
-      k = k + 12
-    end
-    a += c2i(iurl,k); b += c2i(iurl,k+4); c += (c2i(iurl,k+8) << 8) + len
-    a,b,c = mix(a,b,c)
-    return c
-  end
-  
-  # Calculates de checksum to use as 'ch' parameter on request_uri, 
-  # for example the checksum of www.rubyonrails.com is 6602033163
-  def cn
-    ch = old_cn
-    ch = ((ch/7) << 2) | ((ch-(ch/13).floor*13)&7)
-    new_url = []
-    20.times { i2c(ch).each { |i| new_url << i }; ch -= 9 }
-    ('6' + old_cn(new_url).to_s).to_i
-  end
-
-  # URI that gets the pagerank, 
-  # for example to get the Google's pagerank of www.rubyonrails.com the request_uri is http://toolbarqueries.google.com/search?client=navclient-auto&hl=en&ch=6602033163&ie=UTF-8&oe=UTF-8&features=Rank&q=info:www.rubyonrails.com
-  def request_uri
-    # http://www.bigbold.com/snippets/posts/show/1260 + _ -> %5F
-    "http://toolbarqueries.google.com/tbr?client=navclient-auto&hl=en&ch=#{cn}&ie=UTF-8&oe=UTF-8&features=Rank&q=info:#{URI.escape(@uri, /[^-.!~*'()a-zA-Z\d]/)}"
+  def initialize(domain)
+    self.domain = domain
+    self.checksum = GoogleChecksum.generate("info:#{self.domain}")
   end
 
   # Return a number between 0 to 10, that represents the Google PageRank
-  def page_rank(uri = @uri)
-    @uri = uri if uri != @uri
-    res = HTTParty.get(request_uri, :headers => {"User-Agent" => Object.const_defined?("WITH_USER_AGENT") ? Object.const_get("WITH_USER_AGENT") : "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10.5; fr; rv:1.9.0.10) Gecko/2009042315 Firefox/3.0.10" })
-    if (m=res.to_s.match(/Rank_1:\d:(\d+)/))
-      return m[1].to_i
-    elsif res.to_s.match(/automated queries/im)
-      raise AutomatedQueryError.new("Blacklisted for automated queries")
-    end
-  rescue OpenURI::HTTPError, SocketError
-    nil
+  def check
+    url = "#{toolbar_url}?" + params.collect {|k,v| "#{k}=#{v}"}.join("&")
+    res = HTTParty.get(url, :headers => {"User-Agent" => "Mozilla/5.0 (compatible; MSIE 9.0; Windows NT 6.1; Trident/5.0)" }, :format => :raw)
+    res.to_s.match(/Rank_\d+:\d+:(\d+)/) ? $1.to_i : nil
   end
 
-  private :m1, :i2c, :c2i, :mix, :old_cn
+  private
+  def toolbar_url
+    "http://toolbarqueries.google.com/tbr"
+  end
+
+  def params
+    {:client => "navclient-auto", :ch => @checksum, :features => "Rank", :q => "info:#{self.domain}"}
+  end
 end
